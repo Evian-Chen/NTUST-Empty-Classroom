@@ -10,7 +10,6 @@ const ClubDetail = () => import("@/pages/ClubDetail.vue");
 const Events = () => import("@/pages/Events.vue");
 const EventDetail = () => import("@/pages/EventDetail.vue");
 const Resources = () => import("@/pages/Resources.vue");
-const Stories = () => import("@/pages/Stories.vue");
 const Promote = () => import("@/pages/Promote.vue");
 const Login = () => import("@/pages/Login.vue");
 const Me = () => import("@/pages/Me.vue");
@@ -36,15 +35,18 @@ const routes = [
   { path: "/events", name: "events", component: Events },
   { path: "/events/:eventId", name: "event-detail", component: EventDetail },
   { path: "/resources", name: "resources", component: Resources },
-  { path: "/stories", name: "stories", component: Stories },
   { path: "/promote", name: "promote", component: Promote },
   { path: "/login", name: "login", component: Login },
-  { path: "/me", name: "me", component: Me, meta: { requiresAuth: true } },
+  { path: "/me", 
+    name: "me", 
+    component: Me, 
+    // meta: { requiresAuth: true } 
+  },
   {
     path: "/admin",
     name: "admin",
     component: AdminDashboard,
-    meta: { requiresAuth: true, roles: ["committee", "admin"] },
+    // meta: { requiresAuth: true, roles: ["committee", "admin"] },  // 測試用，直接看到後台長啥樣
     children: [
       {
         path: "clubs",

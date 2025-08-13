@@ -9,6 +9,7 @@
         <h3 class="text-lg font-semibold">{{ club.name }}</h3>
         <p class="text-sm text-gray-600">
           <span class="uppercase">{{ club.type }}</span>
+          <span v-if="club.area"> · {{ club.area }}</span>
           <span v-if="club.city"> · {{ club.city }}</span>
           <span v-if="club.meetingTime"> · {{ club.meetingTime }}</span>
           <span v-if="club.language"> · {{ langLabel }}</span>
@@ -29,6 +30,8 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   club: { type: Object, required: true },
   selected: { type: Boolean, default: false }

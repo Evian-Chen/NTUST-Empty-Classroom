@@ -14,8 +14,8 @@
         <RouterLink to="/events" class="text-tmblue underline">查看所有活動 →</RouterLink>
       </div>
       <div class="card">
-        <h2 class="font-semibold mb-2">成功案例</h2>
-        <p class="text-sm text-gray-600">展示學生分會對外合作與求助成果。</p>
+        <h2 class="font-semibold mb-2">我們能幫什麼</h2>
+        <RouterLink to="/help" class="text-tmblue underline">需要協助？我們在這裡 →</RouterLink>
       </div>
     </div>
   </section>

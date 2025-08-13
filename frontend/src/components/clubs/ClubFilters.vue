@@ -1,5 +1,5 @@
 <template>
-  <div class="card grid md:grid-cols-5 gap-3 items-end">
+  <div class="card grid md:grid-cols-6 gap-3 items-end">
     <div>
       <label class="text-xs text-gray-500">類型</label>
       <select v-model="model.type" class="border rounded-2xl px-3 py-2 w-full">
@@ -8,6 +8,10 @@
         <option value="community">社區分會</option>
         <option value="corporate">企業分會</option>
       </select>
+    </div>
+    <div>
+      <label class="text-xs text-gray-500">地區（Area/Division）</label>
+      <input v-model="model.area" class="border rounded-2xl px-3 py-2 w-full" placeholder="例：D67 Area A1" />
     </div>
     <div>
       <label class="text-xs text-gray-500">城市</label>
@@ -35,24 +39,42 @@
       <input v-model="model.q" class="border rounded-2xl px-3 py-2 w-full" placeholder="搜尋關鍵字…" />
       <button class="btn-ghost" @click="reset">重設</button>
     </div>
+    <div>
+      <label class="text-xs text-gray-500">星期</label>
+      <select v-model="model.weekday" class="border rounded-2xl px-3 py-2 w-full">
+        <option value="">不限</option>
+        <option v-for="(w,idx) in weekdays" :key="idx" :value="idx">週{{ w }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="text-xs text-gray-500">時段</label>
+      <select v-model="model.timeSlot" class="border rounded-2xl px-3 py-2 w-full">
+        <option value="">不限</option>
+        <option value="morning">早上</option>
+        <option value="afternoon">下午</option>
+        <option value="evening">晚上</option>
+      </select>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, watch, toRefs } from 'vue'
+import { reactive, watch } from 'vue'
 
 const props = defineProps({
   modelValue: { type: Object, default: () => ({}) }
 })
 const emit = defineEmits(['update:modelValue'])
 
-// use a local reactive clone to avoid mutating parent until watcher runs
 const model = reactive({
   type: props.modelValue.type || '',
+  area: props.modelValue.area || '',
   city: props.modelValue.city || '',
   language: props.modelValue.language || '',
   mode: props.modelValue.mode || '',
   q: props.modelValue.q || '',
+  weekday: props.modelValue.weekday || '',
+  timeSlot: props.modelValue.timeSlot || '',
 })
 
 watch(model, (v) => {
@@ -61,9 +83,14 @@ watch(model, (v) => {
 
 function reset(){
   model.type = ''
+  model.area = ''
   model.city = ''
   model.language = ''
   model.mode = ''
   model.q = ''
+  model.weekday = ''
+  model.timeSlot = ''
 }
+
+const weekdays = ['日','一','二','三','四','五','六']
 </script>

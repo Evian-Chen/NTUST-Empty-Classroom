@@ -5,7 +5,16 @@ export const useClubStore = defineStore('clubs', {
   state: () => ({
     items: [],
     total: 0,
-    filters: { type: '', city: '', language: '', mode: '', q: '' },
+    filters: {
+      type: '',
+      area: '',
+      city: '',
+      language: '',
+      mode: '',
+      weekday: '',
+      timeSlot: '',
+      q: ''
+    },
     loading: false,
   }),
   actions: {

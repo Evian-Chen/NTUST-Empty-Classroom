@@ -9,7 +9,6 @@
           <RouterLink to="/directory" class="hover:underline">分會名錄</RouterLink>
           <RouterLink to="/events" class="hover:underline">活動</RouterLink>
           <RouterLink to="/resources" class="hover:underline">資源</RouterLink>
-          <RouterLink to="/stories" class="hover:underline">故事</RouterLink>
           <RouterLink to="/promote" class="hover:underline">對外合作</RouterLink>
           <RouterLink to="/me" class="hover:underline">個人中心</RouterLink>
           <RouterLink to="/admin" class="btn-ghost text-white">後台</RouterLink>

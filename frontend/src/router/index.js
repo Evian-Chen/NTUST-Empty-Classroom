@@ -10,7 +10,6 @@ const ClubDetail = () => import("@/pages/ClubDetail.vue");
 const Events = () => import("@/pages/Events.vue");
 const EventDetail = () => import("@/pages/EventDetail.vue");
 const Resources = () => import("@/pages/Resources.vue");
-const Promote = () => import("@/pages/Promote.vue");
 const Login = () => import("@/pages/Login.vue");
 const Me = () => import("@/pages/Me.vue");
 const AdminDashboard = () => import("@/pages/admin/Dashboard.vue");
@@ -35,7 +34,6 @@ const routes = [
   { path: "/events", name: "events", component: Events },
   { path: "/events/:eventId", name: "event-detail", component: EventDetail },
   { path: "/resources", name: "resources", component: Resources },
-  { path: "/promote", name: "promote", component: Promote },
   { path: "/login", name: "login", component: Login },
   { path: "/me", 
     name: "me", 

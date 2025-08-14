@@ -1,0 +1,22 @@
+Place files under your Vite+Vue app's `src/` folder.
+
+Quick install steps:
+1) Ensure Pinia & Router are set up.
+2) Register the widget near the root layout (e.g., App.vue or AppLayout.vue):
+   <script setup>
+   import Assistant from '@/components/assistant/Assistant.vue'
+   </script>
+   <template>
+     <RouterView />
+     <Assistant />
+   </template>
+
+3) (Optional) Hook to backend chat:
+   - Set store mode to 'api' somewhere after login/init:
+       import { useAssistantStore } from '@/stores/assistant'
+       useAssistantStore().setMode('api')
+   - Implement POST /api/assistant/chat { text, context } -> { text, actions?: [{label,intent,params?}] }
+
+4) Tailwind is assumed for styles; colors use Toastmasters blue (#004165).
+
+That's it. Click the floating 🤖 button at the bottom-right to chat and navigate.

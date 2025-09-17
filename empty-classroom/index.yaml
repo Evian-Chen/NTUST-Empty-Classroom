@@ -1,0 +1,894 @@
+openapi: 3.0.3
+info:
+  title: Tracking EDI API
+  description: |
+    Electronic Data Interchange (EDI) API for freight tracking and shipment management.
+    
+    This API provides comprehensive tracking information for ocean and air shipments,
+    including container events, flight details, and real-time status updates.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@gofreight.com
+  license:
+    name: Proprietary
+    
+servers:
+  - url: https://api.gofreight.com/api/tracking
+    description: Production server
+  - url: https://staging-api.gofreight.com/api/tracking
+    description: Staging server
+
+tags:
+  - name: Tracking
+    description: Shipment tracking operations
+  - name: EDI
+    description: Electronic Data Interchange operations
+  - name: Container
+    description: Container tracking and events
+  - name: Air Cargo
+    description: Air freight tracking
+  - name: Flight
+    description: Flight information and status
+
+security:
+  - BearerAuth: []
+
+paths:
+  /edi/status/list/:
+    get:
+      operationId: tracking_shipment_list_status_get
+      summary: Get shipment list status
+      description: |
+        Retrieve the tracking status for multiple shipments.
+        
+        This endpoint returns the current tracking status for a list of HBL 
+        (House Bill of Lading) records. The user must have permission to access 
+        all specified HBLs.
+      tags:
+        - Tracking
+        - EDI
+      parameters:
+        - name: pk
+          in: query
+          description: |
+            HBL primary key(s). Can be provided multiple times to request status
+            for multiple shipments.
+            
+            Examples:
+            - Single HBL: ?pk=123
+            - Multiple HBLs: ?pk=123&pk=456&pk=789
+            - No parameters: returns empty array []
+            
+            **Note:** Only HBLs that the user has permission to access and that have
+            available tracking data will be included in the response.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+            minItems: 0
+          examples:
+            single_hbl:
+              summary: Single HBL
+              value: [123]
+            multiple_hbls:
+              summary: Multiple HBLs
+              value: [123, 456, 789]
+            empty_list:
+              summary: No HBLs (returns empty result)
+              value: []
+      responses:
+        '200':
+          description: |
+            Shipment status list retrieved successfully.
+            
+            Returns an array of shipment status objects for all HBLs that the user has 
+            permission to access and that have tracking data available.
+            
+            **Empty Array Cases:**
+            - When no HBL IDs are provided in query parameters
+            - When none of the requested HBLs have tracking data available
+            - When external tracking service is unavailable or returns no data
+            - When all requested HBLs exist but have no current tracking status
+            
+            **Multiple HBLs:**
+            When multiple HBL IDs are provided, the response will contain status 
+            information for each HBL that has available tracking data. HBLs without 
+            tracking data will not appear in the response array.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShipmentStatusDetailed'
+              examples:
+                success_response:
+                  summary: Success Response with multiple HBLs
+                  value:
+                    - shipment_id: 123
+                      HBL_NO: "HBL-2024-001"
+                      MBL_NO: "MBL-2024-001"
+                      type: "OI"
+                      ETA: "2024-01-20T00:00:00Z"
+                      ETD: "2024-01-15T10:00:00Z"
+                      ATA: null
+                      ATD: null
+                      status:
+                        status: 100
+                        status_str: "Booking Confirmation"
+                        is_delay: false
+                        is_hot: false
+                      status_list:
+                        - key: 100
+                          value: "Booking Confirmation"
+                        - key: 105
+                          value: "In Gate"
+                        - key: 110
+                          value: "Vessel Departure"
+                      current_location: "Los Angeles Port"
+                      POL:
+                        code: "USLAX"
+                        name: "Los Angeles"
+                      POD:
+                        code: "USNYC"
+                        name: "New York"
+                    - shipment_id: 456
+                      HBL_NO: "HBL-2024-002"
+                      MBL_NO: "MBL-2024-001"
+                      type: "OI"
+                      ETA: "2024-01-20T00:00:00Z"
+                      ETD: "2024-01-15T10:00:00Z"
+                      ATA: null
+                      ATD: null
+                      status:
+                        status: 105
+                        status_str: "In Gate"
+                        is_delay: false
+                        is_hot: false
+                      status_list:
+                        - key: 100
+                          value: "Booking Confirmation"
+                        - key: 105
+                          value: "In Gate"
+                        - key: 110
+                          value: "Vessel Departure"
+                      current_location: "Los Angeles Port"
+                      POL:
+                        code: "USLAX"
+                        name: "Los Angeles"
+                      POD:
+                        code: "USNYC"
+                        name: "New York"
+                empty_response:
+                  summary: Empty Response (no HBLs found or no tracking data)
+                  value: []
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+          
+    post:
+      operationId: tracking_shipment_list_status_collect
+      summary: Collect shipment list status
+      description: |
+        Trigger collection of tracking status for multiple shipments.
+        
+        This endpoint initiates the collection process for tracking status 
+        of the specified HBLs.
+      tags:
+        - Tracking
+        - EDI
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShipmentListRequest'
+            examples:
+              request_example:
+                summary: Request Example with HBL list
+                value:
+                  hbl_pk_list: [123, 456, 789]
+              empty_request:
+                summary: Empty request (uses default empty list)
+                value: {}
+      responses:
+        '200':
+          description: |
+            Shipment status collection completed successfully.
+            
+            Triggers the collection process for tracking status of the specified HBLs
+            and returns the current status data for each HBL.
+            
+            **Note:** This endpoint both initiates data collection from external tracking
+            services and returns the current status. The response format is identical
+            to the GET method, containing an array of shipment status objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShipmentStatusDetailed'
+              examples:
+                success_response:
+                  summary: Success Response with collected status data
+                  value:
+                    - shipment_id: 123
+                      HBL_NO: "HBL-2024-001"
+                      MBL_NO: "MBL-2024-001"
+                      type: "OI"
+                      ETA: "2024-01-20T00:00:00Z"
+                      ETD: "2024-01-15T10:00:00Z"
+                      status:
+                        status: 100
+                        status_str: "Booking Confirmation"
+                        is_delay: false
+                        is_hot: false
+                      status_list:
+                        - key: 100
+                          value: "Booking Confirmation"
+                        - key: 105
+                          value: "In Gate"
+                        - key: 110
+                          value: "Vessel Departure"
+                    - shipment_id: 456
+                      HBL_NO: "HBL-2024-002"
+                      MBL_NO: "MBL-2024-001"
+                      type: "OI"
+                      ETA: "2024-01-20T00:00:00Z"
+                      ETD: "2024-01-15T10:00:00Z"
+                      status:
+                        status: 105
+                        status_str: "In Gate"
+                        is_delay: false
+                        is_hot: false
+                      status_list:
+                        - key: 100
+                          value: "Booking Confirmation"
+                        - key: 105
+                          value: "In Gate"
+                        - key: 110
+                          value: "Vessel Departure"
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+
+  /{pk}/edi/status/:
+    get:
+      operationId: tracking_shipment_status_get
+      summary: Get single shipment status
+      description: |
+        Retrieve the tracking status for a single shipment.
+        
+        Returns detailed tracking information for the specified HBL.
+      tags:
+        - Tracking
+        - EDI
+      parameters:
+        - name: pk
+          in: path
+          description: HBL primary key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Shipment status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentStatusDetailed'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /{pk}/edi/container/list/:
+    get:
+      operationId: tracking_container_events_get
+      summary: Get container events
+      description: |
+        Retrieve container events for a shipment.
+        
+        Returns a list of container tracking events associated with the specified HBL.
+      tags:
+        - Tracking
+        - EDI
+        - Container
+      parameters:
+        - name: pk
+          in: path
+          description: HBL primary key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Container events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContainerEvent'
+              examples:
+                success_response:
+                  summary: Container events response
+                  value:
+                    - container_no: "TEMU1234567"
+                      events:
+                        - event_code: "UV"
+                          event_name: "Unloaded from Vessel"
+                          location: "Los Angeles Port"
+                          timestamp: "2024-01-15T14:30:00Z"
+                        - event_code: "GA"
+                          event_name: "Gate In"
+                          location: "Los Angeles Port"
+                          timestamp: "2024-01-14T09:15:00Z"
+                    - container_no: "TEMU7654321"
+                      events:
+                        - event_code: "VD"
+                          event_name: "Vessel Departure"
+                          location: "Shanghai Port"
+                          timestamp: "2024-01-10T22:00:00Z"
+                empty_response:
+                  summary: Empty response (no container events found)
+                  value: []
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+
+  /edi/container/last-event/:
+    post:
+      operationId: tracking_container_last_events_post
+      summary: Get last container events
+      description: |
+        Retrieve the last container events for multiple shipments.
+        
+        Returns the most recent container tracking event for each specified HBL.
+      tags:
+        - Tracking
+        - EDI
+        - Container
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContainerLastEventRequest'
+            examples:
+              request_example:
+                summary: Request Example
+                value:
+                  hbl_pk_list: [123, 456]
+      responses:
+        '200':
+          description: Last container events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContainerLastEvent'
+              examples:
+                success_response:
+                  summary: Last container events response
+                  value:
+                    - hbl_id: 123
+                      container_no: "TEMU1234567"
+                      last_event:
+                        event_code: "UV"
+                        event_name: "Unloaded from Vessel"
+                        location: "Los Angeles Port"
+                        timestamp: "2024-01-15T14:30:00Z"
+                    - hbl_id: 456
+                      container_no: "TEMU7654321"
+                      last_event:
+                        event_code: "GA"
+                        event_name: "Gate In"
+                        location: "Los Angeles Port"
+                        timestamp: "2024-01-14T09:15:00Z"
+                empty_response:
+                  summary: Empty response (no container events found)
+                  value: []
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+
+  /{pk}/edi/air/cargo-status/:
+    get:
+      operationId: tracking_air_cargo_status_get
+      summary: Get air cargo status
+      description: |
+        Retrieve air cargo tracking status for a shipment.
+        
+        Returns air cargo specific tracking information for the specified HBL.
+      tags:
+        - Tracking
+        - EDI
+        - Air Cargo
+      parameters:
+        - name: pk
+          in: path
+          description: HBL primary key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Air cargo status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AirCargoStatus'
+              examples:
+                success_response:
+                  summary: Air cargo status response
+                  value:
+                    - awb_no: "001-12345678"
+                      flight_info:
+                        - flight_no: "AA123"
+                          departure_airport: "LAX"
+                          arrival_airport: "JFK"
+                        - flight_no: "AA456"
+                          departure_airport: "JFK"
+                          arrival_airport: "LHR"
+                      cargo_status: "In Transit"
+                      current_location: "Los Angeles Airport"
+                empty_response:
+                  summary: Empty response (no air cargo status found)
+                  value: []
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+
+  /{pk}/edi/air/flight-status/:
+    get:
+      operationId: tracking_air_flight_status_get
+      summary: Get air flight status
+      description: |
+        Retrieve air flight tracking status and information.
+        
+        Returns flight information including departure/arrival details and EDI data
+        for the air shipment associated with the specified HBL.
+      tags:
+        - Tracking
+        - EDI
+        - Air Cargo
+        - Flight
+      parameters:
+        - name: pk
+          in: path
+          description: HBL primary key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Air flight status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightInfo'
+              examples:
+                flight_info_response:
+                  summary: Flight Info Response
+                  value:
+                    flights:
+                      - flight_no: "AA123"
+                        ETD: "2024-01-15T10:00:00Z"
+                        ETA: "2024-01-15T15:00:00Z"
+                        ATD: "2024-01-15T10:15:00Z"
+                        ATA: "2024-01-15T14:45:00Z"
+                        APOL: "LAX"
+                        APOD: "JFK"
+                    departure_time_details:
+                      is_from_edi: true
+                      matched_flight_no: "AA123"
+                      is_actual: true
+                      is_flight_split: false
+                    arrival_time_details:
+                      is_from_edi: true
+                      matched_flight_no: "AA123"
+                      is_actual: true
+                      is_flight_split: false
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ShipmentStatus:
+      type: object
+      properties:
+        hbl_id:
+          type: integer
+          description: HBL primary key
+          example: 123
+        status:
+          type: string
+          description: Current shipment status
+          example: "In Transit"
+        last_update:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2024-01-15T10:30:00Z"
+
+    ShipmentStatusDetailed:
+      type: object
+      properties:
+        shipment_id:
+          type: integer
+          description: HBL primary key (shipment ID)
+          example: 123
+        HBL_NO:
+          type: string
+          description: House Bill of Lading number
+          example: "HBL-2024-001"
+        MBL_NO:
+          type: string
+          description: Master Bill of Lading number
+          example: "MBL-2024-001"
+        type:
+          type: string
+          description: Shipment type
+          example: "OI"
+          enum: ["OI", "OE", "AI", "AE"]
+        ETA:
+          type: string
+          format: date-time
+          description: Estimated Time of Arrival
+          example: "2024-01-20T00:00:00Z"
+          nullable: true
+        ETD:
+          type: string
+          format: date-time
+          description: Estimated Time of Departure
+          example: "2024-01-15T10:00:00Z"
+          nullable: true
+        ATA:
+          type: string
+          format: date-time
+          description: Actual Time of Arrival
+          example: null
+          nullable: true
+        ATD:
+          type: string
+          format: date-time
+          description: Actual Time of Departure
+          example: null
+          nullable: true
+        FDEST:
+          type: string
+          description: Final destination
+          example: "New York"
+          nullable: true
+        delivery_location:
+          type: string
+          description: Delivery location
+          example: "123 Main St, New York, NY"
+          nullable: true
+        current_location:
+          type: string
+          description: Current location of shipment
+          example: "Los Angeles Port"
+          nullable: true
+        status:
+          type: object
+          properties:
+            status:
+              type: integer
+              description: Current status code
+              example: 100
+            status_str:
+              type: string
+              description: Current status description
+              example: "Booking Confirmation"
+            is_delay:
+              type: boolean
+              description: Whether shipment is delayed
+              example: false
+            is_hot:
+              type: boolean
+              description: Whether shipment is marked as hot/urgent
+              example: false
+        status_list:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: integer
+                description: Status code
+                example: 100
+              value:
+                type: string
+                description: Status description
+                example: "Booking Confirmation"
+        POL:
+          type: object
+          description: Port of Loading
+          properties:
+            code:
+              type: string
+              example: "USLAX"
+            name:
+              type: string
+              example: "Los Angeles"
+          nullable: true
+        POD:
+          type: object
+          description: Port of Discharge
+          properties:
+            code:
+              type: string
+              example: "USNYC"
+            name:
+              type: string
+              example: "New York"
+          nullable: true
+        container_status_list:
+          type: array
+          items:
+            type: string
+          description: List of container numbers
+          example: ["TEMU1234567", "TEMU7654321"]
+
+    TrackingEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          description: Type of tracking event
+          example: "Departure"
+        location:
+          type: string
+          description: Location where event occurred
+          example: "Shanghai Port"
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+          example: "2024-01-10T08:00:00Z"
+        description:
+          type: string
+          description: Event description
+          example: "Container departed from origin port"
+
+    ContainerInfo:
+      type: object
+      properties:
+        container_no:
+          type: string
+          description: Container number
+          example: "TEMU1234567"
+        container_size:
+          type: string
+          description: Container size
+          example: "40HQ"
+        seal_no:
+          type: string
+          description: Seal number
+          example: "SL123456"
+
+    ContainerEvent:
+      type: object
+      properties:
+        container_no:
+          type: string
+          description: Container number
+          example: "TEMU1234567"
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              event_code:
+                type: string
+                example: "UV"
+              event_name:
+                type: string
+                example: "Unloaded from Vessel"
+              location:
+                type: string
+                example: "Los Angeles Port"
+              timestamp:
+                type: string
+                example: "2024-01-15T14:30:00Z"
+
+    ContainerLastEvent:
+      type: object
+      properties:
+        hbl_id:
+          type: integer
+          description: HBL primary key
+          example: 123
+        container_no:
+          type: string
+          description: Container number
+          example: "TEMU1234567"
+        last_event:
+          type: object
+          properties:
+            event_code:
+              type: string
+              example: "UV"
+            event_name:
+              type: string
+              example: "Unloaded from Vessel"
+            location:
+              type: string
+              example: "Los Angeles Port"
+            timestamp:
+              type: string
+              example: "2024-01-15T14:30:00Z"
+
+    AirCargoStatus:
+      type: object
+      properties:
+        awb_no:
+          type: string
+          description: Air Waybill number
+          example: "001-12345678"
+        flight_info:
+          type: array
+          items:
+            type: object
+            properties:
+              flight_no:
+                type: string
+                example: "AA123"
+              departure_airport:
+                type: string
+                example: "LAX"
+              arrival_airport:
+                type: string
+                example: "JFK"
+        cargo_status:
+          type: string
+          description: Current cargo status
+          example: "In Transit"
+        current_location:
+          type: string
+          description: Current location
+          example: "Los Angeles Airport"
+
+    FlightInfo:
+      type: object
+      properties:
+        flights:
+          type: array
+          items:
+            type: object
+            properties:
+              flight_no:
+                type: string
+                example: "AA123"
+              ETD:
+                type: string
+                format: date-time
+                example: "2024-01-15T10:00:00Z"
+              ETA:
+                type: string
+                format: date-time
+                example: "2024-01-15T15:00:00Z"
+              ATD:
+                type: string
+                format: date-time
+                example: "2024-01-15T10:15:00Z"
+              ATA:
+                type: string
+                format: date-time
+                example: "2024-01-15T14:45:00Z"
+              APOL:
+                type: string
+                description: Airport of Loading
+                example: "LAX"
+              APOD:
+                type: string
+                description: Airport of Discharge
+                example: "JFK"
+        departure_time_details:
+          $ref: '#/components/schemas/TimeDetails'
+        arrival_time_details:
+          $ref: '#/components/schemas/TimeDetails'
+
+    TimeDetails:
+      type: object
+      properties:
+        is_from_edi:
+          type: boolean
+          description: Whether time information is from EDI
+          example: true
+        matched_flight_no:
+          type: string
+          description: Matched flight number
+          example: "AA123"
+        is_actual:
+          type: boolean
+          description: Whether time is actual or estimated
+          example: true
+        is_flight_split:
+          type: boolean
+          description: Whether flight has multiple segments
+          example: false
+
+    ShipmentListRequest:
+      type: object
+      properties:
+        hbl_pk_list:
+          type: array
+          items:
+            type: integer
+          description: List of HBL primary keys (optional, defaults to empty list)
+          example: [123, 456, 789]
+          default: []
+
+    ContainerLastEventRequest:
+      type: object
+      required:
+        - hbl_pk_list
+      properties:
+        hbl_pk_list:
+          type: array
+          items:
+            type: integer
+          description: List of HBL primary keys
+          example: [123, 456]
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error detail message
+          example: "An error occurred"
+
+    PermissionDeniedError:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Permission denied message
+          example: "You do not have permission to perform this action."
+
+  responses:
+    PermissionDenied:
+      description: Permission denied - user doesn't have access to requested resources
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PermissionDeniedError'
+
+    NotFound:
+      description: Requested resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            not_found:
+              summary: Resource not found
+              value:
+                detail: "Resource not found"
+
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            bad_request:
+              summary: Bad request
+              value:
+                detail: "Invalid request parameters"

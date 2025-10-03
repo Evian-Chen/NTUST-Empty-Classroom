@@ -1,0 +1,40 @@
+export async function getBuildings() {
+  const res = await fetch("/api/buildings");
+  if (!res.ok) throw new Error("Failed to load buildings");
+  return res.json();
+}
+export async function getAvailability(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`/api/availability?${qs}`);
+  if (!res.ok) throw new Error("Failed to load availability");
+  return res.json();
+}
+export async function getWeekAvailability(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`/api/availability/week?${qs}`);
+  if (!res.ok) throw new Error("Failed to load week availability");
+  return res.json();
+}
+export async function getRoomDetail(roomKey, date) {
+  const qs = new URLSearchParams(date ? { date } : {}).toString();
+  const res = await fetch(
+    `/api/room/${encodeURIComponent(roomKey)}${qs ? `?${qs}` : ""}`
+  );
+  if (!res.ok) throw new Error("Failed to load room detail");
+  return res.json();
+}
+export async function getHoliday(date) {
+  const res = await fetch(`/api/calendar/${encodeURIComponent(date)}`);
+  if (!res.ok) throw new Error("Failed to load calendar");
+  return res.json();
+}
+export async function getLikes() {
+  const res = await fetch("/api/site/likes");
+  if (!res.ok) throw new Error("Failed to load likes");
+  return res.json();
+}
+export async function postLike() {
+  const res = await fetch("/api/site/like", { method: "POST" });
+  if (!res.ok) throw new Error("Failed to like");
+  return res.json();
+}

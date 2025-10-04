@@ -6,6 +6,9 @@ export async function getBuildings() {
 export async function getAvailability(params) {
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(`/api/availability?${qs}`);
+  if (res.status == 400) {
+    return res.json();
+  }
   if (!res.ok) throw new Error("Failed to load availability");
   return res.json();
 }

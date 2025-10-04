@@ -17,7 +17,6 @@ client = MongoClient(
     tlsCAFile=certifi.where() 
 ) 
 db = client["emptyClassroom"]
-course_collection = db["room"]
 building_collection = db["building"]
 course_collection = db["course"]
 
@@ -59,7 +58,7 @@ buildings = [
     ("國際大樓", "IB"),
 ]
 
-# 便利所有(巢狀)frame/iframe，切到有元素的那一層
+# 所有(巢狀)frame/iframe，切到有元素的那一層
 def switch_to_frame_with(locator):
     driver.switch_to.default_content()
     frames = driver.find_elements(By.CSS_SELECTOR, "frame, iframe")
@@ -103,15 +102,28 @@ def collect_courses(date, weekday):
         for i in range(0, 15):  # 0->教室, 1->第一節, ..., 14->第十四節
             if i == 0: 
                 classroom = blocks[i].text.strip()
+                if classroom == "1": break
             else:
-                if not blocks[i].text:
-                    continue
-                courseName = blocks[i].text.split()[0]
-                professor = blocks[i].text.split()[-1] if courseName else ""
                 start_time = time_table[str(i)].split("-")[0]
                 end_time = time_table[str(i)].split("-")[1]
                 course_starttime = datetime.strptime(f"{datetime.now().year}{date}{start_time}", "%Y%m月%d日%H:%M")
                 course_endtime = datetime.strptime(f"{datetime.now().year}{date}{end_time}", "%Y%m月%d日%H:%M")
+                dateTime = datetime.strptime(f"{datetime.now().year}{date}", "%Y%m月%d日")
+                if not blocks[i].text:
+                    course_data_to_insert.append({
+                        "professor": "",
+                        "courseName": "",
+                        "startTime": course_starttime,
+                        "endTime": course_endtime,
+                        "buildingCode": classroom.split("-")[0],  # ex: TR
+                        "roomNumber": classroom.split("-")[1],
+                        "weekday": weekdays[weekday],
+                        "timeSlotNo": i,
+                        "dateTime": dateTime
+                    })
+                    continue
+                courseName = blocks[i].text.split()[0]
+                professor = blocks[i].text.split()[-1] if courseName else ""
                 course_data_to_insert.append({
                     "professor": professor,
                     "courseName": courseName,
@@ -120,9 +132,10 @@ def collect_courses(date, weekday):
                     "buildingCode": classroom.split("-")[0],  # ex: TR
                     "roomNumber": classroom.split("-")[1],
                     "weekday": weekdays[weekday],
-                    "timeSlotNo": i
+                    "timeSlotNo": i,
+                    "dateTime": dateTime
                 })
-                print(f"{weekdays[weekday]} {classroom} {courseName} {professor} {course_starttime}~{course_endtime}")
+                print(f"{weekdays[weekday]} {classroom} {courseName} {professor} {course_starttime}~{course_endtime} {dateTime}")
     return course_data_to_insert
 
 def add_course_to_mongo(course_data):
@@ -136,10 +149,18 @@ def add_course_to_mongo(course_data):
         except Exception as e:
             print(f"Error updating course in MongoDB: {e}")
 
+# main
 locator = (By.XPATH, '//select[@name="classlist_ddl"]')
 ok = switch_to_frame_with(locator)
 if not ok:
     raise RuntimeError("找不到含有 classlist_ddl 的 frame/iframe")
+
+# empty the database for the previous week
+building_collection.drop()
+course_collection.drop()
+
+# TODO:
+# 1. 應該把本日以後的
 
 for i in range(len(buildings)):
     # 到這裡就已在正確的 frame 了

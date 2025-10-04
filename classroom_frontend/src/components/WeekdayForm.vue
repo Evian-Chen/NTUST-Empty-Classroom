@@ -29,7 +29,7 @@
 </template>
 <script setup>
 import { reactive, ref } from 'vue'
-import { getWeekAvailability } from '../../api.js'
+import { getWeekAvailability } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync'
 
 const emit = defineEmits(['results'])

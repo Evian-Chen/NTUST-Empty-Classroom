@@ -6,7 +6,7 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getLikes, postLike } from '../../api.js'
+import { getLikes, postLike } from '../api.js'
 
 const count = ref(0)
 const clicked = ref(false)

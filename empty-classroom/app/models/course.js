@@ -33,6 +33,10 @@ const courseSchema = mongoose.Schema({
     timeSlotNo: {
         type: Number,
         required: true,
+    },
+    dateTime: {
+        type: Date,
+        required: true
     }
 });
 

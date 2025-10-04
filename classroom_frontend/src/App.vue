@@ -7,10 +7,10 @@
 
     <SearchTabs v-model="tab"/>
 
-    <component :is="activeForm" @results="onResults" @holiday="onHoliday"/>
+    <component :is="activeForm" @results="onResults" @holiday="onHoliday" @timeSlotError="onTimeSlotError"/>
 
     <div style="height:12px"></div>
-    <ResultsList :items="results" :holiday="holiday" :error="error"/>
+    <ResultsList :items="results" :holiday="holiday" :timeSlotError="timeSlotError" :error="error"/>
   </div>
 </template>
 <script setup>
@@ -26,6 +26,7 @@ import FloatingLike from './components/FloatingLike.vue'
 const tab = ref('building')
 const results = ref([])
 const holiday = ref(null)
+const timeSlotError = ref(false)
 const error = ref('')
 
 const activeForm = computed(()=>({
@@ -38,9 +39,14 @@ const activeForm = computed(()=>({
 function onResults(payload){
   error.value = ''
   holiday.value = null
+  timeSlotError.value = false
   results.value = Array.isArray(payload?.data) ? payload.data : (payload?.data?.items || [])
 }
 function onHoliday(h){ holiday.value = h }
+function onTimeSlotError(message){ 
+  timeSlotError.value = message || true
+  results.value = []
+}
 
 // 根據網址參數決定預設分頁（有 building/date 時選 Building+Date；有 roomKey 時選教室）
 onMounted(()=>{

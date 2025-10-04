@@ -31,10 +31,10 @@
 </template>
 <script setup>
 import { reactive, ref, onMounted, computed } from 'vue'
-import { getBuildings, getAvailability } from '../../api.js'
+import { getBuildings, getAvailability } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync'
 
-const emit = defineEmits(['results'])
+const emit = defineEmits(['results', 'timeSlotError'])
 const buildings = ref([])
 const state = useQuerySync(reactive({
   date: new Date().toISOString().slice(0,10),
@@ -47,7 +47,6 @@ onMounted(async()=>{
   try {
     const response = await getBuildings()
     console.log('Buildings response:', response)
-    // 後端返回 { items: [...], total: 8 }
     buildings.value = response.items || response || []
   } catch (error) {
     console.error('Failed to load buildings:', error)
@@ -72,37 +71,92 @@ async function search(){
   
   try {
     const data = await getAvailability(params)
+    
+    // 檢查回應是否包含錯誤訊息（400 錯誤會直接回傳 JSON）
+    if (data.message && typeof data.message === 'string') {
+      emit('timeSlotError', data.message)
+      return
+    }
+    
     emit('results', { type:'building-date', params, data })
   } catch (error) {
-    console.warn('API call failed, using mock data:', error)
-    // 使用模擬數據
+    console.warn('API call failed:', error)
+    
+    // 其他錯誤使用模擬數據
     const mockRooms = [
+      // 有課的教室
       {
         roomKey: `${params.building || 'T4'}-101`,
         buildingCode: params.building || 'T4',
-        roomNo: '101',
-        capacity: 50,
-        floor: '1F',
-        tags: { projector: true, whiteboard: true, sockets: 8 },
-        freeRanges: [[1, 1], [3, 4], [6, 7]]
+        roomNumber: '101',
+        professor: '王小明',
+        courseName: '計算機概論',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
       },
       {
         roomKey: `${params.building || 'T4'}-102`,
         buildingCode: params.building || 'T4',
-        roomNo: '102',
-        capacity: 40,
-        floor: '1F',
-        tags: { projector: true, pc: true, sockets: 6 },
-        freeRanges: [[2, 3], [5, 6], [8, 8]]
+        roomNumber: '102',
+        professor: '李大華',
+        courseName: '資料結構',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
       },
+      // 空教室
+      {
+        roomKey: `${params.building || 'T4'}-103`,
+        buildingCode: params.building || 'T4',
+        roomNumber: '103',
+        professor: '',
+        courseName: '',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
+      },
+      {
+        roomKey: `${params.building || 'T4'}-104`,
+        buildingCode: params.building || 'T4',
+        roomNumber: '104',
+        professor: '',
+        courseName: '',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
+      },
+      // 更多有課的教室
       {
         roomKey: `${params.building || 'T4'}-201`,
         buildingCode: params.building || 'T4',
-        roomNo: '201',
-        capacity: 30,
-        floor: '2F',
-        tags: { pc: true, sockets: 12 },
-        freeRanges: [[1, 2], [5, 8]]
+        roomNumber: '201',
+        professor: '張美麗',
+        courseName: '演算法',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
+      },
+      // 更多空教室
+      {
+        roomKey: `${params.building || 'T4'}-202`,
+        buildingCode: params.building || 'T4',
+        roomNumber: '202',
+        professor: '',
+        courseName: '',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
+      },
+      {
+        roomKey: `${params.building || 'T4'}-203`,
+        buildingCode: params.building || 'T4',
+        roomNumber: '203',
+        professor: '',
+        courseName: '',
+        timeSlotNo: parseInt(params.slotFrom) || 3,
+        weekday: 'Mon',
+        dateTime: new Date(params.date)
       }
     ]
     emit('results', { type:'building-date', params, data: mockRooms })

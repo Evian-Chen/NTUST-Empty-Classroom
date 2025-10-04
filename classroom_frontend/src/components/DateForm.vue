@@ -20,7 +20,7 @@
 </template>
 <script setup>
 import { reactive } from 'vue'
-import { getAvailability, getHoliday } from '../../api.js'
+import { getAvailability, getHoliday } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync'
 
 const emit = defineEmits(['results','holiday'])

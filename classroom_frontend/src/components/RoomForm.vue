@@ -17,7 +17,7 @@
 </template>
 <script setup>
 import { ref } from 'vue'
-import { getRoomDetail } from '../../api.js'
+import { getRoomDetail } from '../api.js'
 
 const emit = defineEmits(['results'])
 const roomKey = ref('')

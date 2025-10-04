@@ -1,4 +1,5 @@
 module.exports = {
     course: require('./course'),
-    building: require('./building')
+    building: require('./building'),
+    schoolSchedule: require('./schoolSchedule')
 }

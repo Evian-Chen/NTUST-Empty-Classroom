@@ -9,15 +9,13 @@
           <option :value="3">Wed</option>
           <option :value="4">Thu</option>
           <option :value="5">Fri</option>
-          <option :value="6">Sat</option>
-          <option :value="7">Sun</option>
         </select>
       </div>
       <div style="flex:1 1 220px">
         <label class="small">Time Slots (optional)</label>
         <div class="row">
-          <input class="input" style="flex:1" type="number" min="1" v-model.number="state.slotFrom" placeholder="From"/>
-          <input class="input" style="flex:1" type="number" min="1" v-model.number="state.slotTo" placeholder="To"/>
+          <input class="input" style="flex:1" type="number" min="1" max="14" v-model.number="state.slotFrom" placeholder="From"/>
+          <input class="input" style="flex:1" type="number" min="1" max="14" v-model.number="state.slotTo" placeholder="To"/>
         </div>
       </div>
       <div style="align-self:end">

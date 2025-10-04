@@ -8,24 +8,22 @@
           <option v-for="b in buildings" :key="b.buildingCode" :value="b.buildingCode">{{ b.buildingCode }} - {{ b.name }}</option>
         </select>
       </div>
-      <div style="flex:1 1 220px">
-        <label class="small">Date</label>
-        <input class="input" type="date" v-model="state.date" />
+      <div style="flex:1 1 200px">
+        <label class="small">Weekday</label>
+        <select class="select" v-model="state.weekday">
+          <option v-for="(date, day) in weekdays" :key="day" :value="date">{{ day }} {{ date.toLocaleDateString() }}</option>
+        </select>
       </div>
       <div style="flex:1 1 220px">
         <label class="small">Time Slots (optional)</label>
         <div class="row">
-          <input class="input" style="flex:1" type="number" min="1" v-model.number="state.slotFrom" placeholder="From"/>
-          <input class="input" style="flex:1" type="number" min="1" v-model.number="state.slotTo" placeholder="To"/>
+          <input class="input" style="flex:1" type="number" min="1" max="14" v-model.number="state.slotFrom" placeholder="From"/>
+          <input class="input" style="flex:1" type="number" min="1" max="14" v-model.number="state.slotTo" placeholder="To"/>
         </div>
       </div>
       <div style="align-self:end">
         <button class="btn" @click="search">Search</button>
       </div>
-    </div>
-    <div class="small" style="margin-top:8px" v-if="shareUrl">
-      分享連結：<button class="copy" @click="copy">Copy</button>
-      <span style="margin-left:8px">{{ shareUrl }}</span>
     </div>
   </div>
 </template>
@@ -37,11 +35,25 @@ import { useQuerySync } from '../composables/useQuerySync'
 const emit = defineEmits(['results', 'timeSlotError'])
 const buildings = ref([])
 const state = useQuerySync(reactive({
-  date: new Date().toISOString().slice(0,10),
+  weekday: new Date(),
   building: '',
   slotFrom: '',
   slotTo: ''
 }))
+const weekdays = reactive({
+  "Mon": new Date(),
+  "Tue": new Date(),
+  "Wed": new Date(),
+  "Thu": new Date(),
+  "Fri": new Date()
+})
+const getLastSat = () => {
+  const today = new Date();
+  const diff = 6 - today.getDay();
+  const test = diff === 0 ? today : today.setDate(today.getDate() + diff);
+  const lastSaturday = new Date(test);
+  return lastSaturday;
+}
 
 onMounted(async()=>{ 
   try {
@@ -52,11 +64,19 @@ onMounted(async()=>{
     console.error('Failed to load buildings:', error)
     buildings.value = []
   }
+
+  const lastSaturday = getLastSat();
+  weekdays.Mon.setDate(lastSaturday.getDate() + 2);
+  weekdays.Tue.setDate(lastSaturday.getDate() + 3);
+  weekdays.Wed.setDate(lastSaturday.getDate() + 4);
+  weekdays.Thu.setDate(lastSaturday.getDate() + 5);
+  weekdays.Fri.setDate(lastSaturday.getDate() + 6);
+  state.weekday = weekdays.Mon;
 })
 
 const shareUrl = computed(()=>{
   const sp = new URLSearchParams()
-  if(state.date) sp.set('date', state.date)
+  if(state.weekday) sp.set('weekday', state.weekday)
   if(state.building) sp.set('building', state.building)
   if(state.slotFrom) sp.set('slotFrom', state.slotFrom)
   if(state.slotTo) sp.set('slotTo', state.slotTo)
@@ -64,13 +84,15 @@ const shareUrl = computed(()=>{
 })
 
 async function search(){
-  const params = { date: state.date }
+  const params = { weekday: state.weekday.toISOString() }
   if(state.building) params.building = state.building
   if(state.slotFrom) params.slotFrom = state.slotFrom
   if(state.slotTo) params.slotTo = state.slotTo
   
+  console.log('Search params:', params);
+  
   try {
-    const data = await getAvailability(params)
+    const data = await getAvailability(params);
     
     // 檢查回應是否包含錯誤訊息（400 錯誤會直接回傳 JSON）
     if (data.message && typeof data.message === 'string') {
@@ -93,7 +115,7 @@ async function search(){
         courseName: '計算機概論',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       },
       {
         roomKey: `${params.building || 'T4'}-102`,
@@ -103,7 +125,7 @@ async function search(){
         courseName: '資料結構',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       },
       // 空教室
       {
@@ -114,7 +136,7 @@ async function search(){
         courseName: '',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       },
       {
         roomKey: `${params.building || 'T4'}-104`,
@@ -124,7 +146,7 @@ async function search(){
         courseName: '',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       },
       // 更多有課的教室
       {
@@ -135,7 +157,7 @@ async function search(){
         courseName: '演算法',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       },
       // 更多空教室
       {
@@ -146,7 +168,7 @@ async function search(){
         courseName: '',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       },
       {
         roomKey: `${params.building || 'T4'}-203`,
@@ -156,7 +178,7 @@ async function search(){
         courseName: '',
         timeSlotNo: parseInt(params.slotFrom) || 3,
         weekday: 'Mon',
-        dateTime: new Date(params.date)
+        dateTime: new Date(params.weekday)
       }
     ]
     emit('results', { type:'building-date', params, data: mockRooms })

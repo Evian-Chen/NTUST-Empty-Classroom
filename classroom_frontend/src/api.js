@@ -18,11 +18,15 @@ export async function getWeekAvailability(params) {
   if (!res.ok) throw new Error("Failed to load week availability");
   return res.json();
 }
-export async function getRoomDetail(roomKey, date) {
-  const qs = new URLSearchParams(date ? { date } : {}).toString();
-  const res = await fetch(
-    `/api/room/${encodeURIComponent(roomKey)}${qs ? `?${qs}` : ""}`
-  );
+export async function getRoomDetail(roomKey, weekday) {
+  let url = `/api/room/${encodeURIComponent(roomKey)}`;
+  
+  if (weekday) {
+    const params = new URLSearchParams({ weekday: weekday });
+    url += `?${params.toString()}`;
+  }
+  
+  const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to load room detail");
   return res.json();
 }

@@ -5,9 +5,11 @@
         <label class="small">Room (e.g. TR-312)</label>
         <input class="input" v-model="roomKey" placeholder="TR-312" />
       </div>
-      <div style="flex:1 1 220px">
-        <label class="small">Date (optional)</label>
-        <input class="input" type="date" v-model="date" />
+      <div style="flex:1 1 200px">
+        <label class="small">Weekday</label>
+        <select class="select" v-model="weekday">
+          <option v-for="(date, day) in weekdays" :key="day" :value="date">{{ day }} {{ date.toLocaleDateString() }}</option>
+        </select>
       </div>
       <div style="align-self:end">
         <button class="btn" :disabled="!roomKey" @click="search">Search</button>
@@ -16,15 +18,46 @@
   </div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { getRoomDetail } from '../api.js'
+import { getLastSat } from '../utils/utils.js'
 
 const emit = defineEmits(['results'])
 const roomKey = ref('')
-const date = ref('')
+const weekday = ref(new Date())
+const weekdays = reactive({
+  "Mon": new Date(),
+  "Tue": new Date(),
+  "Wed": new Date(),
+  "Thu": new Date(),
+  "Fri": new Date()
+})
+
+onMounted(()=>{ 
+  const lastSaturday = getLastSat();
+  
+  // 創建這週的工作日日期
+  weekdays.Mon = new Date(lastSaturday);
+  weekdays.Mon.setDate(lastSaturday.getDate() + 2);
+  
+  weekdays.Tue = new Date(lastSaturday);
+  weekdays.Tue.setDate(lastSaturday.getDate() + 3);
+  
+  weekdays.Wed = new Date(lastSaturday);
+  weekdays.Wed.setDate(lastSaturday.getDate() + 4);
+  
+  weekdays.Thu = new Date(lastSaturday);
+  weekdays.Thu.setDate(lastSaturday.getDate() + 5);
+  
+  weekdays.Fri = new Date(lastSaturday);
+  weekdays.Fri.setDate(lastSaturday.getDate() + 6);
+  
+  // 設定預設選擇
+  weekday.value = weekdays.Mon;
+})
 
 async function search(){
-  const data = await getRoomDetail(roomKey.value, date.value || undefined)
-  emit('results', { type:'room', params:{ roomKey: roomKey.value, date: date.value || undefined }, data })
+  const data = await getRoomDetail(roomKey.value, weekday.value.toISOString() || undefined)
+  emit('results', { type:'room', params:{ roomKey: roomKey.value, weekday: weekday.value.toISOString() }, data })
 }
 </script>

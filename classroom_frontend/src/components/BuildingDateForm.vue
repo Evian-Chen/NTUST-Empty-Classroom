@@ -31,6 +31,7 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { getBuildings, getAvailability } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync'
+import { getLastSat } from '../utils/utils.js'
 
 const emit = defineEmits(['results', 'timeSlotError'])
 const buildings = ref([])
@@ -47,13 +48,6 @@ const weekdays = reactive({
   "Thu": new Date(),
   "Fri": new Date()
 })
-const getLastSat = () => {
-  const today = new Date();
-  const diff = 6 - today.getDay();
-  const test = diff === 0 ? today : today.setDate(today.getDate() + diff);
-  const lastSaturday = new Date(test);
-  return lastSaturday;
-}
 
 onMounted(async()=>{ 
   try {

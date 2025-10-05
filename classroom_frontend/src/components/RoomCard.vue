@@ -14,8 +14,13 @@
         </div>
       </div>
     </div>
-    <div class="time-info" style="text-align: right; color: #6b7280; font-size: 0.85em;">
-      節次：{{ item.timeSlotNo }}
+    <div style="text-align: right; color: #6b7280; font-size: 0.85em;">
+      <div class="time-info">
+        節次：{{ item.timeSlotNo }}
+      </div>
+      <div class="time-info">
+        時間：{{ timeRange }}
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +39,21 @@ const isEmpty = computed(() => {
 
 const cardClass = computed(() => {
   return isEmpty.value ? 'empty-room' : 'occupied-room'
+})
+
+const timeRange = computed(() => {
+  const item = props.item
+  if (!item?.startTime || !item?.endTime) return ''
+  
+  const formatTime = (timeString) => {
+    const date = new Date(timeString)
+    // 取得 UTC 時間的小時和分鐘，忽略時區轉換
+    const hours = date.getUTCHours().toString().padStart(2, '0')
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+  }
+  
+  return `${formatTime(item.startTime)} 到 ${formatTime(item.endTime)}`
 })
 </script>
 <style scoped>

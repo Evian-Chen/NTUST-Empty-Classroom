@@ -35,13 +35,3 @@ export async function getHoliday(date) {
   if (!res.ok) throw new Error("Failed to load calendar");
   return res.json();
 }
-export async function getLikes() {
-  const res = await fetch("/api/site/likes");
-  if (!res.ok) throw new Error("Failed to load likes");
-  return res.json();
-}
-export async function postLike() {
-  const res = await fetch("/api/site/like", { method: "POST" });
-  if (!res.ok) throw new Error("Failed to like");
-  return res.json();
-}

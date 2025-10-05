@@ -43,14 +43,14 @@ const availabilityRouter = require('./routes/availability');
 const buildingsRouter = require('./routes/buildings');
 const calenderRouter = require('./routes/calendar');
 const roomRouter = require('./routes/room')
-const siteRouter = require('./routes/site')
+const visitRouter = require('./routes/visit')
 
 app.use('/', indexRouter);
 app.use('/api/availability', availabilityRouter);
 app.use('/api/buildings', buildingsRouter);
 app.use('/api/calendar', calenderRouter);
 app.use('/api/room', roomRouter);
-app.use('/api/site', siteRouter);
+app.use('/api/visit', visitRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

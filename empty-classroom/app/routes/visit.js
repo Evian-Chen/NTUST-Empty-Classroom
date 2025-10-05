@@ -1,0 +1,32 @@
+var express = require("express");
+var router = express.Router();
+
+const model = require("../models");
+
+router.post("/", async (req, res) => {
+  try {
+    await model.visit.create({
+      ip: req.ip,
+      userAgent: req.get("User-Agent"),
+      timestamp: new Date(),
+    });
+    console.log(`Logged visit from IP: ${req.ip}`);
+    res.status(200).json({ message: "Visit logged." });
+  } catch (err) {
+    console.log(`fetching error: ${err}`);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+router.get("/stats", async (req, res) => {
+  try {
+    const stats = await model.visit.countDocuments();
+    console.log(`Total visits: ${stats}`);
+    res.status(200).json({ message: "get stats succeffully", total: stats });
+  } catch (err) {
+    console.log(`fetching error: ${err}`);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+module.exports = router;

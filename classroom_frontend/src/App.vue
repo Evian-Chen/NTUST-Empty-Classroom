@@ -17,6 +17,7 @@
 
     <div style="height:12px"></div>
     <ResultsList :items="results" :holiday="holiday" :timeSlotError="timeSlotError" :error="error"/>
+    <FloatingVisitCount />
   </div>
 </template>
 <script setup>
@@ -27,12 +28,14 @@ import DateForm from './components/DateForm.vue'
 import WeekdayForm from './components/WeekdayForm.vue'
 import RoomForm from './components/RoomForm.vue'
 import ResultsList from './components/ResultList.vue'
+import FloatingVisitCount from './components/FloatingVisitCount.vue'
 
 const tab = ref('building')
 const results = ref([])
 const holiday = ref(null)
 const timeSlotError = ref(false)
 const error = ref('')
+const visitStats = ref(0);
 
 const activeForm = computed(()=>({
   building: BuildingDateForm,
@@ -73,11 +76,21 @@ function onTabChange(newTab) {
 }
 
 // 根據網址參數決定預設分頁（有 building/date 時選 Building+Date；有 roomKey 時選教室）
-onMounted(()=>{
+onMounted(async()=>{
   const sp = new URLSearchParams(location.search)
   if(sp.get('roomKey')) tab.value = 'room'
   else if(sp.get('weekday')) tab.value = 'weekday'
   else if(sp.get('date') && (sp.get('building') || sp.get('slotFrom') || sp.get('slotTo'))) tab.value = 'building'
   else if(sp.get('date')) tab.value = 'date'
+
+  await fetch("/api/visit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      userAgent: navigator.userAgent
+    })
+  });
 })
 </script>

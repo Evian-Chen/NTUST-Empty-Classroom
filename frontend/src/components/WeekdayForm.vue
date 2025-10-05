@@ -27,7 +27,7 @@ import { useQuerySync } from '../composables/useQuerySync.js'
 import { getLastSat } from '../utils/utils.js'
 
 const emit = defineEmits(['results', 'timeSlotError'])
-const state = useQuerySync(reactive({ slotFrom:'', slotTo:'' }))
+const state = useQuerySync(reactive({ slotFrom:'', slotTo:'' }), ['slotFrom', 'slotTo']) // 只同步時段參數
 const weekday = ref(new Date())
 const resolvedDate = ref('')
 
@@ -63,11 +63,19 @@ onMounted(()=>{
 })
 
 async function search(){
-  const params = { weekday: weekday.value.toISOString() }
+  // 使用 YYYY-MM-DD 格式避免時區問題
+  const year = weekday.value.getFullYear();
+  const month = String(weekday.value.getMonth() + 1).padStart(2, '0');
+  const day = String(weekday.value.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
+  
+  const params = { weekday: dateString }
   if(state.slotFrom) params.slotFrom = state.slotFrom
   if(state.slotTo) params.slotTo = state.slotTo
   
   console.log('Weekday search params:', params);
+  console.log('Original date object:', weekday.value);
+  console.log('Sending date string:', dateString);
   
   try {
     const data = await getAvailability(params);

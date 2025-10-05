@@ -63,7 +63,15 @@ async function search(){
   emit('timeSlotError', false)
   
   try {
-    const data = await getRoomDetail(roomKey.value, weekday.value.toISOString() || undefined)
+    // 使用 YYYY-MM-DD 格式避免時區問題
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    const data = await getRoomDetail(roomKey.value, formatDate(weekday.value) || undefined)
     console.log('API response:', data)
     
     // 檢查是否有錯誤信息
@@ -75,7 +83,7 @@ async function search(){
     }
     
     console.log('Success, emitting results')
-    emit('results', { type:'room', params:{ roomKey: roomKey.value, weekday: weekday.value.toISOString() }, data })
+    emit('results', { type:'room', params:{ roomKey: roomKey.value, weekday: formatDate(weekday.value) }, data })
   } catch (error) {
     console.log('Caught error:', error)
     emit('timeSlotError', error.message)

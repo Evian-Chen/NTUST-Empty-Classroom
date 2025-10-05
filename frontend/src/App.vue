@@ -35,7 +35,7 @@ const results = ref([])
 const holiday = ref(null)
 const timeSlotError = ref(false)
 const error = ref('')
-const visitStats = ref(0);
+const API_BASE = import.meta.env.VITE_API_BASE || 'api'; // dev 無就走 proxy 的 /api
 
 const activeForm = computed(()=>({
   building: BuildingDateForm,
@@ -90,7 +90,7 @@ onMounted(async()=>{
   else if(sp.get('date') && (sp.get('building') || sp.get('slotFrom') || sp.get('slotTo'))) tab.value = 'building'
   else if(sp.get('date')) tab.value = 'date'
 
-  await fetch("/api/visit", {
+  await fetch(`${API_BASE}/visit`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

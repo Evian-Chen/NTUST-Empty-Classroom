@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || ''; // dev 無就走 proxy 的 /api
+const API_BASE = import.meta.env.VITE_API_BASE || 'api'; // dev 無就走 proxy 的 /api
 
 export async function getBuildings() {
   const res = await fetch(`${API_BASE}/buildings`);

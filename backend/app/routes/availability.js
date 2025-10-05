@@ -19,9 +19,20 @@ router.get("/", async (req, res) => {
     let targetDate;
     
     if (weekday) {
-      targetDate = new Date(weekday);
+      // 處理 YYYY-MM-DD 格式的日期字串，避免時區問題
+      if (weekday.includes('-') && weekday.length === 10) {
+        // YYYY-MM-DD 格式
+        const [year, month, day] = weekday.split('-').map(Number);
+        targetDate = new Date(year, month - 1, day); // month 是 0-based
+      } else {
+        // ISO 格式（向後兼容）
+        targetDate = new Date(weekday);
+      }
+      
       const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const dayOfWeek = targetDate.getDay();
+      
+      console.log(`Input weekday: ${weekday}, Parsed date: ${targetDate.toDateString()}, Day of week: ${dayOfWeek}`);
       
       // 只允許週一到週五
       if (dayOfWeek === 0 || dayOfWeek === 6) {
@@ -29,7 +40,7 @@ router.get("/", async (req, res) => {
       }
       
       targetWeekday = weekdayNames[dayOfWeek];
-      console.log(`Target date: ${targetDate}, weekday: ${targetWeekday}`);
+      console.log(`Target date: ${targetDate.toDateString()}, weekday: ${targetWeekday}`);
     }
 
     // 建立查詢條件

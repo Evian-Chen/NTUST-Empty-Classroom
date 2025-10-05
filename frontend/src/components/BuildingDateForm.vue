@@ -40,7 +40,7 @@ const state = useQuerySync(reactive({
   building: '',
   slotFrom: '',
   slotTo: ''
-}))
+}), ['building', 'slotFrom', 'slotTo']) // 只同步這些參數，不同步 weekday 到 URL
 const weekdays = reactive({
   "Mon": new Date(),
   "Tue": new Date(),
@@ -70,7 +70,7 @@ onMounted(async()=>{
 
 const shareUrl = computed(()=>{
   const sp = new URLSearchParams()
-  if(state.weekday) sp.set('weekday', state.weekday)
+  // 不把 weekday Date 物件放到 URL，改用簡化的格式
   if(state.building) sp.set('building', state.building)
   if(state.slotFrom) sp.set('slotFrom', state.slotFrom)
   if(state.slotTo) sp.set('slotTo', state.slotTo)
@@ -78,12 +78,20 @@ const shareUrl = computed(()=>{
 })
 
 async function search(){
-  const params = { weekday: state.weekday.toISOString() }
+  // 使用 YYYY-MM-DD 格式避免時區問題
+  const year = state.weekday.getFullYear();
+  const month = String(state.weekday.getMonth() + 1).padStart(2, '0');
+  const day = String(state.weekday.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
+  
+  const params = { weekday: dateString }
   if(state.building) params.building = state.building
   if(state.slotFrom) params.slotFrom = state.slotFrom
   if(state.slotTo) params.slotTo = state.slotTo
   
   console.log('Search params:', params);
+  console.log('Original date object:', state.weekday);
+  console.log('Sending date string:', dateString);
   
   try {
     const data = await getAvailability(params);

@@ -11,10 +11,6 @@ const cors = require("cors");  // 處理vite的跨網域問題
 const bodyParser = require("body-parser");
 const history = require("connect-history-api-fallback");
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -24,7 +20,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const allowed = [
   "http://localhost:5173",
   "http://192.168.227.59:5173/",
-  "https://ntust-empty-classroom.vercel.app/"
+  "https://ntust-empty-classroom.vercel.app",
+  "ntust-empty-classroom.vercel.app",
+  "https://ntust-empty-classroom.vercel.app/api"
 ]
 
 // 跨域設定

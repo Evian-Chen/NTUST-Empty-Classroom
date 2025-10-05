@@ -8,12 +8,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+const API_BASE = import.meta.env.VITE_API_BASE || 'api'; // dev 無就走 proxy 的 /api
 
 const count = ref({ total: 0 })
 
 async function fetchVisits() {
   try {
-    const res = await fetch('/api/visit/stats')
+    const res = await fetch(`${API_BASE}/visit/stats`)
     if (!res.ok) throw new Error('Failed to load stats')
     count.value = await res.json()
   } catch (err) {

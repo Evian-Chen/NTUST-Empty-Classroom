@@ -21,7 +21,7 @@
 <script setup>
 import { reactive } from 'vue'
 import { getAvailability, getHoliday } from '../api.js'
-import { useQuerySync } from '../composables/useQuerySync'
+import { useQuerySync } from '../composables/useQuerySync.js'
 
 const emit = defineEmits(['results','holiday'])
 const state = useQuerySync(reactive({

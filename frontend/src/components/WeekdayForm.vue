@@ -24,7 +24,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { getAvailability } from '../api.js'
-import { useQuerySync } from '../composables/useQuerySync'
+import { useQuerySync } from '../composables/useQuerySync.js'
 import { getLastSat } from '../utils/utils.js'
 
 const emit = defineEmits(['results', 'timeSlotError'])

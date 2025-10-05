@@ -58,11 +58,14 @@ function onHoliday(h){
 }
 
 function onTimeSlotError(message){ 
+  console.log('onTimeSlotError called with:', message)
   if (message === false) {
     timeSlotError.value = false
   } else {
     timeSlotError.value = message || true
-    results.value = []
+    results.value = []  // 清空結果
+    error.value = ''    // 清空其他錯誤
+    holiday.value = null // 清空假期信息
   }
 }
 

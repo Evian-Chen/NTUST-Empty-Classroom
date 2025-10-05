@@ -10,14 +10,18 @@ router.get("/:roomKey", async (req, res) => {
     const { weekday } = req.query;
 
     // 檢查 roomKey
-    if (!["EE", "T4", "T3", "TR", "IB", "E1", "E2", "MA"].includes(roomKey.split("-")[0])) {
-        res.status(400).json({ message: "請輸入正確的大樓" });
+    if (
+      !["EE", "T4", "T3", "TR", "IB", "E1", "E2", "MA"].includes(
+        roomKey.split("-")[0]
+      )
+    ) {
+      return res.status(400).json({ message: "請輸入正確的大樓" });
     }
 
     // 處理 weekday
     let targetDate;
     let targetWeekday;
-    
+
     if (weekday) {
       try {
         const weekdayResult = utils.getWeekday(weekday);
@@ -27,12 +31,12 @@ router.get("/:roomKey", async (req, res) => {
         res.status(400).json({ message: error.message });
       }
     }
-    
+
     const query = {
       buildingCode: roomKey.split("-")[0],
       roomNumber: roomKey.split("-")[1],
     };
-    
+
     if (targetWeekday) {
       query.weekday = targetWeekday;
     }

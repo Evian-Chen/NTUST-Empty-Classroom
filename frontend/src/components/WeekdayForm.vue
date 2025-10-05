@@ -18,7 +18,6 @@
         <button class="btn" @click="search">Search</button>
       </div>
     </div>
-    <p class="small" v-if="resolvedDate">實際日期：<strong>{{ resolvedDate }}</strong></p>
   </div>
 </template>
 <script setup>

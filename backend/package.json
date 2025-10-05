@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "dotenv": "^17.2.3"
+  },
+  "scripts": {
+    "start": "node app/app.js",
+    "dev": "nodemon app/app.js"
   }
 }

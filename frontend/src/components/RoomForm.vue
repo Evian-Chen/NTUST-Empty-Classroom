@@ -19,7 +19,7 @@
 </template>
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { getRoomDetail } from '../api.js'
+import { getRoomDetail, postSearchCount } from '../api.js'
 import { getLastSat } from '../utils/utils.js'
 
 const emit = defineEmits(['results', 'timeSlotError'])
@@ -83,6 +83,11 @@ async function search(){
     }
     
     console.log('Success, emitting results')
+    postSearchCount().then(res=>{
+      console.log('Search count incremented:', res.message)
+    }).catch(err=>{
+      console.warn('Failed to post search count:', err)
+    })
     emit('results', { type:'room', params:{ roomKey: roomKey.value, weekday: formatDate(weekday.value) }, data })
   } catch (error) {
     console.log('Caught error:', error)

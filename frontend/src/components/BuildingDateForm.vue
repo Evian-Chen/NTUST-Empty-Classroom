@@ -29,7 +29,7 @@
 </template>
 <script setup>
 import { reactive, ref, onMounted, computed } from 'vue'
-import { getBuildings, getAvailability } from '../api.js'
+import { getBuildings, getAvailability, getSearchCount, postSearchCount } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync.js'
 import { getLastSat } from '../utils/utils.js'
 
@@ -102,6 +102,11 @@ async function search(){
       return
     }
     
+    postSearchCount().then(res=>{
+      console.log('Search count incremented:', res.message)
+    }).catch(err=>{
+      console.warn('Failed to post search count:', err)
+    })
     emit('results', { type:'building-date', params, data })
   } catch (error) {
     console.warn('API call failed:', error)

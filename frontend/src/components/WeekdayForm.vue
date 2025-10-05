@@ -22,7 +22,7 @@
 </template>
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
-import { getAvailability } from '../api.js'
+import { getAvailability, postSearchCount } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync.js'
 import { getLastSat } from '../utils/utils.js'
 
@@ -87,6 +87,11 @@ async function search(){
     }
     
     resolvedDate.value = weekday.value.toLocaleDateString() || ''
+    postSearchCount().then(res=>{
+      console.log('Search count incremented:', res.message)
+    }).catch(err=>{
+      console.warn('Failed to post search count:', err)
+    })
     emit('results', { type:'weekday', params, data })
   } catch (error) {
     console.warn('Weekday API call failed:', error)

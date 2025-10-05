@@ -40,3 +40,19 @@ export async function getHoliday(date) {
   if (!res.ok) throw new Error("Failed to load calendar");
   return res.json();
 }
+export async function postSearchCount() {
+  const res = await fetch(`${API_BASE}/search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ date: new Date() })
+  });
+  if (!res.ok) throw new Error("Failed to post search count");
+  return res.json();
+}
+export async function getSearchCount() {
+  const res = await fetch(`${API_BASE}/search/count`);
+  if (!res.ok) throw new Error("Failed to get search count");
+  return res.json();
+}

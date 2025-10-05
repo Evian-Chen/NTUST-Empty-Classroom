@@ -20,7 +20,7 @@
 </template>
 <script setup>
 import { reactive } from 'vue'
-import { getAvailability, getHoliday } from '../api.js'
+import { getAvailability, getHoliday, postSearchCount } from '../api.js'
 import { useQuerySync } from '../composables/useQuerySync.js'
 
 const emit = defineEmits(['results','holiday'])
@@ -41,6 +41,11 @@ async function search(){
   if(state.slotFrom) params.slotFrom = state.slotFrom
   if(state.slotTo) params.slotTo = state.slotTo
   const data = await getAvailability(params)
+  postSearchCount().then(res=>{
+    console.log('Search count incremented:', res.message)
+  }).catch(err=>{
+    console.warn('Failed to post search count:', err)
+  })
   emit('results', { type:'date', params, data })
 }
 </script>

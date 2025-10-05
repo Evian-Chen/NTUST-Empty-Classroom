@@ -1,0 +1,37 @@
+name: Weekly Crawler
+
+on:
+  schedule:
+    - cron: '0 1 * * 6'   # 每週六 01:00 UTC = 台北 09:00
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip3 install -r backend/requirements.txt
+          # 安裝 Chrome
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg unzip
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          # webdriver-manager 會自動下載並管理 ChromeDriver
+          
+      - name: Run crawler
+        env:
+          TZ: Asia/Taipei
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          cd backend
+          python3 crawler.py

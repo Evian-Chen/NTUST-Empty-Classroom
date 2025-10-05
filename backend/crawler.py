@@ -9,6 +9,15 @@ import dotenv
 import os
 from pymongo import MongoClient
 import certifi
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_argument("--headless=new")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+# 添加 Mac 專用的 Chrome 路徑
+options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
 # 資料庫連線
 dotenv.load_dotenv()
 client = MongoClient(
@@ -21,7 +30,8 @@ building_collection = db["building"]
 course_collection = db["course"]
 
 url = "https://dss18.ntust.edu.tw/classroom_user/qry_classroom.htm"
-driver = webdriver.Chrome()  
+# 直接使用 Chrome，讓 Selenium 自動管理 ChromeDriver
+driver = webdriver.Chrome(options=options)  
 driver.get(url)
 wait = WebDriverWait(driver, 20)
 
@@ -149,43 +159,53 @@ def add_course_to_mongo(course_data):
         except Exception as e:
             print(f"Error updating course in MongoDB: {e}")
 
-# main
-locator = (By.XPATH, '//select[@name="classlist_ddl"]')
-ok = switch_to_frame_with(locator)
-if not ok:
-    raise RuntimeError("找不到含有 classlist_ddl 的 frame/iframe")
+try:
+    # main
+    locator = (By.XPATH, '//select[@name="classlist_ddl"]')
+    ok = switch_to_frame_with(locator)
+    if not ok:
+        raise RuntimeError("找不到含有 classlist_ddl 的 frame/iframe")
 
-# empty the database for the previous week
-building_collection.drop()
-course_collection.drop()
+    # empty the database for the previous week
+    building_collection.drop()
+    course_collection.drop()
 
-# TODO:
-# 1. 應該把本日以後的
+    # TODO:
+    # 1. 應該把本日以後的
 
-for i in range(len(buildings)):
-    # 到這裡就已在正確的 frame 了
-    ddl = Select(wait.until(EC.element_to_be_clickable(locator)))
-    ddl.select_by_index(i+1) 
+    for i in range(len(buildings)):
+        # 到這裡就已在正確的 frame 了
+        ddl = Select(wait.until(EC.element_to_be_clickable(locator)))
+        ddl.select_by_index(i+1) 
 
-    # 下一個最近的週一
-    day = 7 - datetime.today().weekday()
-    date = datetime.today()+timedelta(days=day)
+        # 下一個最近的週一
+        day = 7 - datetime.today().weekday()
+        date = datetime.today()+timedelta(days=day)
 
-    for i in range(5):
-        tag = f"{date.month}月{date.day+i}日"  # ex: 9月15日
-        print(f"Collecting {tag} ...")
-        driver.find_element(By.XPATH, f"//a[@title='{tag}']").click()
-        time.sleep(3)  # 等待課表載入
-        course = collect_courses(tag, i)
-        add_course_to_mongo(course)
-        time.sleep(2)
+        for j in range(5):
+            tag = f"{date.month}月{date.day+j}日"  # ex: 9月15日
+            print(f"Collecting {tag} for {buildings[i][0]}...")
+            try:
+                driver.find_element(By.XPATH, f"//a[@title='{tag}']").click()
+                time.sleep(3)  # 等待課表載入
+                course = collect_courses(tag, j)
+                add_course_to_mongo(course)
+                time.sleep(2)
+            except Exception as e:
+                print(f"Error collecting data for {tag}: {e}")
+                continue
+            
+        building_collection.update_one(
+            {"buildingCode": buildings[i][1]},
+            {"$set": {"name": buildings[i][0], "buildingCode": buildings[i][1], "campus": "Main"}},
+            upsert=True
+        )
+        print(f"Completed building: {buildings[i][0]}")
         
-    building_collection.update_one(
-        {"buildingCode": buildings[i][1]},
-        {"$set": {"name": buildings[i][0], "buildingCode": buildings[i][1], "campus": "Main"}},
-        upsert=True
-    )
-    
-client.close()
-driver.close()
+except Exception as e:
+    print(f"Critical error during crawling: {e}")
+finally:
+    client.close()
+    driver.quit()
+    print("Crawler finished.")
 

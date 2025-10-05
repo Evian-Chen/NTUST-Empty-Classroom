@@ -21,11 +21,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const allowed = [
+  "http://localhost:5173",
+  "http://192.168.227.59:5173/",
+  "https://ntust-empty-classroom.vercel.app/"
+]
+
 // 跨域設定
 app.use(cors({
-  origin: "http://localhost:5173", // 開發中的vue預設server
-  methods: ["GET", "POST"],
-  credential: true
+  origin: (origin, cb) => {
+    // allow non-browser tools (no Origin) like curl/cron
+    if (!origin) return cb(null, true);
+    cb(null, allowed.includes(origin));
+  },
+  method: ["GET", "POST"],
+  credentials: false // 你目前沒用 cookie，可設 false
 }));
 
 // 解析urlencoded的資料型態 (前端傳來的資料)

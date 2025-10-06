@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://ntust-empty-classroom.vercel.app/sitemap.xml

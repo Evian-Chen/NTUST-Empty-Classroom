@@ -6,7 +6,7 @@
         <input class="input" type="date" v-model="state.date" />
       </div>
       <div style="flex:1 1 220px">
-        <label class="small">Time Slots (optional)</label>
+        <label class="small">節次（1-14)</label>
         <div class="row">
           <input class="input" style="flex:1" type="number" min="1" v-model.number="state.slotFrom" placeholder="From"/>
           <input class="input" style="flex:1" type="number" min="1" v-model.number="state.slotTo" placeholder="To"/>

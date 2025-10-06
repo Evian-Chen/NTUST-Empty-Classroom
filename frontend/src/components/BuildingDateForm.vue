@@ -15,10 +15,16 @@
         </select>
       </div>
       <div style="flex:1 1 220px">
-        <label class="small">Time Slots (optional)</label>
+        <label class="small">節次（1-14)</label>
         <div class="row">
-          <input class="input" style="flex:1" type="number" min="1" max="14" v-model.number="state.slotFrom" placeholder="From"/>
-          <input class="input" style="flex:1" type="number" min="1" max="14" v-model.number="state.slotTo" placeholder="To"/>
+          <select class="select" style="flex:1" v-model="state.slotFrom">
+            <option value="">From</option>
+            <option v-for="slot in timeSlots" :key="slot" :value="slot">{{ slot }}</option>
+          </select>
+          <select class="select" style="flex:1" v-model="state.slotTo">
+            <option value="">To</option>
+            <option v-for="slot in timeSlots" :key="slot" :value="slot">{{ slot }}</option>
+          </select>
         </div>
       </div>
       <div style="align-self:end">
@@ -35,6 +41,7 @@ import { getLastSat } from '../utils/utils.js'
 
 const emit = defineEmits(['results', 'timeSlotError'])
 const buildings = ref([])
+const timeSlots = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
 const state = useQuerySync(reactive({
   weekday: new Date(),
   building: '',
@@ -86,8 +93,8 @@ async function search(){
   
   const params = { weekday: dateString }
   if(state.building) params.building = state.building
-  if(state.slotFrom) params.slotFrom = state.slotFrom
-  if(state.slotTo) params.slotTo = state.slotTo
+  if(state.slotFrom) params.slotFrom = parseInt(state.slotFrom)
+  if(state.slotTo) params.slotTo = parseInt(state.slotTo)
   
   console.log('Search params:', params);
   console.log('Original date object:', state.weekday);

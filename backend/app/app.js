@@ -22,7 +22,8 @@ const allowed = [
   "http://192.168.227.59:5173/",
   "https://ntust-empty-classroom.vercel.app",
   "ntust-empty-classroom.vercel.app",
-  "https://ntust-empty-classroom.vercel.app/api"
+  "https://ntust-empty-classroom.vercel.app/api",
+  "https://localhost:3000",
 ]
 
 // 跨域設定
@@ -53,6 +54,7 @@ const calenderRouter = require('./routes/calendar');
 const roomRouter = require('./routes/room')
 const visitRouter = require('./routes/visit')
 const searchRouter = require('./routes/search')
+const healthzRouter = require('./routes/healthz');
 
 app.use('/', indexRouter);
 app.use('/api/availability', availabilityRouter);
@@ -61,6 +63,7 @@ app.use('/api/calendar', calenderRouter);
 app.use('/api/room', roomRouter);
 app.use('/api/visit', visitRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/healthz', healthzRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

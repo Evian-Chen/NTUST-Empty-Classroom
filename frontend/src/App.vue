@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="header">
-      <h1 style="margin:0">空教室查詢</h1>
+      <h1 style="margin:0">台科空教室查詢</h1>
       <!-- <FloatingLike/> -->
     </div>
 

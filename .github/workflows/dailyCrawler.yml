@@ -1,9 +1,8 @@
-name: Weekly Crawler
+name: Daily Crawler
 
 on:
   schedule:
-    - cron: '0 1 * * 6'   # 每週六 01:00 UTC = 台北 09:00
-  workflow_dispatch:
+    - cron: '0 21 * * 0-4'   # 每天 21:00 UTC = 台北 05:00
 
 jobs:
   crawl:
@@ -33,5 +32,5 @@ jobs:
           TZ: Asia/Taipei
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
-          cd backend
-          python3 crawler.py
+          cd backend/crawler
+          python3 dailyCrawler.py

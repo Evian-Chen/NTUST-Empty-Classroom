@@ -2,9 +2,8 @@
   <div class="container">
     <div class="header">
       <h1 style="margin:0">台科空教室查詢</h1>
-      <!-- <FloatingLike/> -->
+      <FloatingInfo style="margin:0" />
     </div>
-
     <SearchTabs v-model="tab" @update:modelValue="onTabChange"/>
 
     <component 
@@ -29,6 +28,7 @@ import WeekdayForm from './components/WeekdayForm.vue'
 import RoomForm from './components/RoomForm.vue'
 import ResultsList from './components/ResultList.vue'
 import FloatingVisitCount from './components/FloatingVisitCount.vue'
+import FloatingInfo from './components/FloatingInfo.vue'
 
 const tab = ref('building')
 const results = ref([])
@@ -58,7 +58,6 @@ function onHoliday(h){
 }
 
 function onTimeSlotError(message){ 
-  console.log('onTimeSlotError called with:', message)
   if (message === false) {
     timeSlotError.value = false
   } else {
@@ -89,6 +88,8 @@ onMounted(async()=>{
   else if(sp.get('weekday')) tab.value = 'weekday'
   else if(sp.get('date') && (sp.get('building') || sp.get('slotFrom') || sp.get('slotTo'))) tab.value = 'building'
   else if(sp.get('date')) tab.value = 'date'
+
+  console.log("嗨！感謝你使用這個網站，如果你有任何建議或回饋，歡迎透過 GitHub 開 Issue，如果喜歡這個功能，歡迎留下星星 OuOb：https://github.com/Evian-Chen/NTUST-Empty-Classroom/tree/main")
 
   await fetch(`${API_BASE}/visit`, {
     method: "POST",

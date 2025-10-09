@@ -5,6 +5,5 @@ export const getLastSat = () => {
 
   const lastSaturday = new Date(today);
   lastSaturday.setDate(today.getDate() - daysUntilLastSaturday);
-  console.log("Last Saturday:", lastSaturday);
   return lastSaturday;
 };

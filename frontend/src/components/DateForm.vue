@@ -42,7 +42,7 @@ async function search(){
   if(state.slotTo) params.slotTo = state.slotTo
   const data = await getAvailability(params)
   postSearchCount().then(res=>{
-    console.log('Search count incremented:', res.message)
+    //
   }).catch(err=>{
     console.warn('Failed to post search count:', err)
   })

@@ -57,8 +57,6 @@ onMounted(()=>{
 })
 
 async function search(){
-  console.log('Search started for roomKey:', roomKey.value)
-  
   // 清理之前的錯誤狀態
   emit('timeSlotError', false)
   
@@ -72,25 +70,21 @@ async function search(){
     };
     
     const data = await getRoomDetail(roomKey.value, formatDate(weekday.value) || undefined)
-    console.log('API response:', data)
     
     // 檢查是否有錯誤信息
     if (data.message) {
-      console.log('Error message received:', data.message)
       // 發送錯誤信息
       emit('timeSlotError', data.message)
       return
     }
     
-    console.log('Success, emitting results')
     postSearchCount().then(res=>{
-      console.log('Search count incremented:', res.message)
+      //
     }).catch(err=>{
       console.warn('Failed to post search count:', err)
     })
     emit('results', { type:'room', params:{ roomKey: roomKey.value, weekday: formatDate(weekday.value) }, data })
   } catch (error) {
-    console.log('Caught error:', error)
     emit('timeSlotError', error.message)
   }
 }

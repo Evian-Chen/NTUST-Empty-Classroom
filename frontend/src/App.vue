@@ -2,7 +2,7 @@
   <div class="container">
     <div class="header">
       <h1 style="margin:0">台科空教室查詢</h1>
-      <FloatingInfo style="margin:0" />
+      <FloatingInfo />
     </div>
     <SearchTabs v-model="tab" @update:modelValue="onTabChange"/>
 

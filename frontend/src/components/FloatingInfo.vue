@@ -1,4 +1,3 @@
-<!-- src/components/FloatingInfo.vue -->
 <template>
   <div class="fi-root" :class="{ 'fi-open': open }">
     <!-- Toggle badge -->
@@ -49,11 +48,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <style scoped>
-/* Root (fixed at top-right) */
+/* Root (relative positioning when in header) */
 .fi-root {
-  position: fixed;
-  top: 30px;
-  right: 50px;
+  position: relative;
   z-index: 60;
 }
 
@@ -78,11 +75,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   z-index: 61;
 }
 
-/* Panel */
+/* Panel - positioned relative to the root container */
 .fi-panel {
-  position: fixed;
-  top: 16px;
-  right: 16px;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
   width: min(92vw, 360px);
   background: #ffffff;
   border: 1px solid #e5e7eb;     /* gray-200 */

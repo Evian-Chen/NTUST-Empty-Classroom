@@ -37,7 +37,6 @@ onMounted(() => {
 
   getSearchCount()
     .then((res) => {
-      console.log("Current search count:", res.total);
       countSearch.value.total = res.total;
     })
     .catch((err) => {

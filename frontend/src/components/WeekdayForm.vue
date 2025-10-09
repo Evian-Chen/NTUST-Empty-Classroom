@@ -79,11 +79,7 @@ async function search(){
   const params = { weekday: dateString }
   if(state.slotFrom) params.slotFrom = parseInt(state.slotFrom)
   if(state.slotTo) params.slotTo = parseInt(state.slotTo)
-  
-  console.log('Weekday search params:', params);
-  console.log('Original date object:', weekday.value);
-  console.log('Sending date string:', dateString);
-  
+
   try {
     const data = await getAvailability(params);
     
@@ -95,7 +91,7 @@ async function search(){
     
     resolvedDate.value = weekday.value.toLocaleDateString() || ''
     postSearchCount().then(res=>{
-      console.log('Search count incremented:', res.message)
+      //
     }).catch(err=>{
       console.warn('Failed to post search count:', err)
     })

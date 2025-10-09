@@ -59,7 +59,6 @@ const weekdays = reactive({
 onMounted(async()=>{ 
   try {
     const response = await getBuildings()
-    console.log('Buildings response:', response)
     buildings.value = response.items || response || []
   } catch (error) {
     console.error('Failed to load buildings:', error)
@@ -96,10 +95,6 @@ async function search(){
   if(state.slotFrom) params.slotFrom = parseInt(state.slotFrom)
   if(state.slotTo) params.slotTo = parseInt(state.slotTo)
   
-  console.log('Search params:', params);
-  console.log('Original date object:', state.weekday);
-  console.log('Sending date string:', dateString);
-  
   try {
     const data = await getAvailability(params);
     
@@ -110,7 +105,7 @@ async function search(){
     }
     
     postSearchCount().then(res=>{
-      console.log('Search count incremented:', res.message)
+      //
     }).catch(err=>{
       console.warn('Failed to post search count:', err)
     })

@@ -158,21 +158,19 @@ def add_course_to_mongo(course_data):
             )
         except Exception as e:
             print(f"Error updating course in MongoDB: {e}")
-
-try:
-    # main
-    locator = (By.XPATH, '//select[@name="classlist_ddl"]')
-    ok = switch_to_frame_with(locator)
-    if not ok:
-        raise RuntimeError("找不到含有 classlist_ddl 的 frame/iframe")
-
+            
+            
+def updateOneDay():
+    # 取得該日的整天課表，並儲存起來
+    weekday = datetime.today().weekday()
+    tag = f"{datetime.today().month}月{datetime.today().day}日"  # ex: 9月15日
+    course_data = collect_courses(tag, weekday)
+    add_course_to_mongo(course_data)
+    
+def updateOneWeek():
     # empty the database for the previous week
     building_collection.drop()
     course_collection.drop()
-
-    # TODO:
-    # 1. 應該把本日以後的
-
     for i in range(len(buildings)):
         # 到這裡就已在正確的 frame 了
         ddl = Select(wait.until(EC.element_to_be_clickable(locator)))
@@ -201,7 +199,13 @@ try:
             upsert=True
         )
         print(f"Completed building: {buildings[i][0]}")
-        
+
+try:
+    locator = (By.XPATH, '//select[@name="classlist_ddl"]')
+    ok = switch_to_frame_with(locator)
+    if not ok:
+        raise RuntimeError("找不到含有 classlist_ddl 的 frame/iframe")
+    updateOneDay()
 except Exception as e:
     print(f"Critical error during crawling: {e}")
 finally:

@@ -26,6 +26,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
           # webdriver-manager 會自動下載並管理 ChromeDriver
+      
+      - name: Check environment
+        run: |
+          echo "Environment Check:"
+          echo "Python version: $(python3 --version)"
+          echo "Chrome version: $(google-chrome --version)"
+          echo "Current directory: $(pwd)"
+          echo "Available files: $(ls -la backend/crawler/)"
           
       - name: Run crawler
         env:
@@ -33,4 +41,38 @@ jobs:
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
           cd backend/crawler
-          python3 weeklyCrawler.py
+          echo "Starting Weekly Crawler..."
+          echo "Current time: $(date)"
+          echo "Timezone: $TZ"
+          
+          # 運行爬蟲並捕獲輸出
+          python3 weeklyCrawler.py 2>&1 | tee crawler_output.log
+          
+          echo ""
+          echo "Crawler execution completed!"
+          echo "Exit code: $?"
+          
+          # 顯示日誌摘要
+          if [ -f crawler_output.log ]; then
+            echo ""
+            echo "Output Summary:"
+            echo "=================="
+            cat crawler_output.log
+            echo "=================="
+            
+            # 檢查是否有錯誤
+            if grep -i "error\|exception\|failed" crawler_output.log > /dev/null; then
+              echo "Errors detected in crawler output!"
+              exit 1
+            else
+              echo "Crawler completed successfully!"
+            fi
+          fi
+
+      - name: Upload crawler logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-crawler-logs
+          path: backend/crawler/crawler_output.log
+          retention-days: 7
